@@ -258,7 +258,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 15,
     backgroundColor: "#fff",
     borderRadius: 50,
-    height: 50,
+    height: 40,
     flexDirection: "row",
     alignItems: "center",
     marginTop: 15,

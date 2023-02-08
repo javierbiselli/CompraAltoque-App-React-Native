@@ -30,7 +30,7 @@ const SearchBar = ({ handleUpdateContent }) => {
   };
 
   const [searchTerm, setSearchTerm] = useState("");
-  const [suggestions, setSuggestions] = useState("");
+  const [results, setResults] = useState("");
   const [clicked, setClicked] = useState(false);
 
   const [showResults, setShowResults] = useState(false);
@@ -40,6 +40,8 @@ const SearchBar = ({ handleUpdateContent }) => {
   const [showHistory, setShowHistory] = useState(false);
 
   const [searchState, setSearchState] = useState(false);
+
+  const [suggestions, setSuggestions] = useState([]);
 
   useEffect(() => {
     const fetchHistory = async () => {
@@ -62,19 +64,20 @@ const SearchBar = ({ handleUpdateContent }) => {
   const saveSearch = async (search) => {
     try {
       const currentSearches = await AsyncStorage.getItem("searches");
-      const currentSearchList = currentSearches
+      let currentSearchList = currentSearches
         ? JSON.parse(currentSearches)
         : [];
-      if (
-        !currentSearchList
-          .toString()
-          .toLowerCase()
-          .includes(search.toString().toLowerCase())
-      ) {
-        const newSearches = [search, ...currentSearchList];
-        await AsyncStorage.setItem("searches", JSON.stringify(newSearches));
-        setSearchHistory(newSearches);
+
+      // Verifica si la búsqueda ya existe en el array
+      const searchIndex = currentSearchList.indexOf(search);
+      if (searchIndex !== -1) {
+        // Si existe, la elimina y la agrega al principio
+        currentSearchList.splice(searchIndex, 1);
       }
+
+      const newSearches = [search, ...currentSearchList];
+      await AsyncStorage.setItem("searches", JSON.stringify(newSearches));
+      setSearchHistory(newSearches);
     } catch (error) {
       console.error(error);
     }
@@ -85,11 +88,9 @@ const SearchBar = ({ handleUpdateContent }) => {
       if (searchTerm.length > 1) {
         setIsLoading(true);
         await dispatch(searchProducts(searchTerm)).then((response) => {
+          console.log(response);
           setShowResults(true);
-          const filteredActives = response.data.filter(
-            (products) => products.isActive
-          );
-          filteredActives.sort((a, b) => {
+          response.data.sort((a, b) => {
             const priceAWithDiscount = calculateDiscount(
               a.hasDiscount ? a.discountPercentage : 0,
               a.price
@@ -108,7 +109,7 @@ const SearchBar = ({ handleUpdateContent }) => {
             }
           });
 
-          setSuggestions(filteredActives);
+          setResults(response.data);
           setIsLoading(false);
         });
         saveSearch(searchTerm);
@@ -192,7 +193,7 @@ const SearchBar = ({ handleUpdateContent }) => {
       </>
       {isLoading ? (
         <Loader />
-      ) : suggestions.length === 0 && showResults ? (
+      ) : results.length === 0 && showResults ? (
         <Text style={{ textAlign: "center", fontSize: 18 }}>
           No se encontro ningun producto... y si intentas ser menos especifico?
         </Text>
@@ -203,11 +204,20 @@ const SearchBar = ({ handleUpdateContent }) => {
               <View style={styles.searchItemContainer}>
                 <View style={{ width: "100%", marginLeft: 20 }}>
                   {searchHistory.length > 0 && (
-                    <Text>Busquedas recientes:</Text>
+                    <Text
+                      style={{
+                        fontWeight: "bold",
+                        fontSize: 18,
+                        marginBottom: 5,
+                      }}
+                    >
+                      Busquedas recientes
+                    </Text>
                   )}
                 </View>
-                {searchHistory.map((search, index) => (
+                {searchHistory.slice(0, 3).map((search, index) => (
                   <TouchableOpacity
+                    style={{ width: "100%" }}
                     key={index}
                     onPress={() => {
                       setSearchTerm(search);
@@ -215,20 +225,17 @@ const SearchBar = ({ handleUpdateContent }) => {
                     }}
                   >
                     <View style={styles.searchItem}>
-                      <Text>{search}</Text>
+                      <Text style={{ marginBottom: 5 }}>{search}</Text>
                       <View style={{ marginLeft: 10 }}>
                         <TouchableOpacity
                           style={{
-                            backgroundColor: "red",
-                            borderRadius: 20,
-                            width: 22,
-                            height: 22,
-                            alignItems: "center",
-                            justifyContent: "center",
+                            width: 25,
                           }}
                           onPress={() => deleteSearches(search)}
                         >
-                          <Text style={{ color: "white" }}>X</Text>
+                          <Text style={{ fontSize: 16, fontWeight: "bold" }}>
+                            X
+                          </Text>
                         </TouchableOpacity>
                       </View>
                     </View>
@@ -237,7 +244,7 @@ const SearchBar = ({ handleUpdateContent }) => {
               </View>
             )
           }
-          data={suggestions}
+          data={results}
           renderItem={({ item }) =>
             showResults ? <Product product={item} searchBar={true} /> : null
           }
@@ -252,7 +259,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 15,
     backgroundColor: "#fff",
     borderRadius: 50,
-    height: 50,
+    height: 40,
     flexDirection: "row",
     alignItems: "center",
     marginTop: 15,
@@ -291,17 +298,15 @@ const styles = StyleSheet.create({
   searchItem: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#fff",
-    shadowColor: "#000",
+    justifyContent: "space-between",
     shadowOffset: { width: 1, height: 1 },
-    shadowOpacity: 0.4,
-    shadowRadius: 3,
-    elevation: 3,
-    padding: 5,
+    borderBottomWidth: 1,
+    borderBottomColor: "rgba(0, 0, 0, 0.2)",
+    borderRadius: 20,
+    padding: 10,
     paddingLeft: 15,
     paddingRight: 15,
     fontSize: 14,
-    borderRadius: 15,
     marginTop: 8,
   },
 });

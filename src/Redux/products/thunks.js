@@ -64,6 +64,7 @@ export const searchProducts = (searchTerm) => {
         }
       );
       const res = await response.json();
+      console.log("search executed");
       dispatch(searchProductsSuccess(res.data));
       return res;
     } catch (error) {
