@@ -87,32 +87,34 @@ const SearchBar = ({ handleUpdateContent }) => {
     try {
       if (searchTerm.length > 1) {
         setIsLoading(true);
-        await dispatch(searchProducts(searchTerm)).then((response) => {
-          console.log(response);
-          setShowResults(true);
-          response.data.sort((a, b) => {
-            const priceAWithDiscount = calculateDiscount(
-              a.hasDiscount ? a.discountPercentage : 0,
-              a.price
-            );
+        await dispatch(searchProducts(searchTerm.toLowerCase())).then(
+          (response) => {
+            console.log(response);
+            setShowResults(true);
+            response.data.sort((a, b) => {
+              const priceAWithDiscount = calculateDiscount(
+                a.hasDiscount ? a.discountPercentage : 0,
+                a.price
+              );
 
-            const priceBWithDiscount = calculateDiscount(
-              b.discountPercentage ? b.discountPercentage : 0,
-              b.price
-            );
+              const priceBWithDiscount = calculateDiscount(
+                b.discountPercentage ? b.discountPercentage : 0,
+                b.price
+              );
 
-            if (priceAWithDiscount < priceBWithDiscount) {
-              return -1;
-            }
-            if (priceAWithDiscount > priceBWithDiscount) {
-              return 1;
-            }
-          });
+              if (priceAWithDiscount < priceBWithDiscount) {
+                return -1;
+              }
+              if (priceAWithDiscount > priceBWithDiscount) {
+                return 1;
+              }
+            });
 
-          setResults(response.data);
-          setIsLoading(false);
-        });
-        saveSearch(searchTerm);
+            setResults(response.data);
+            setIsLoading(false);
+          }
+        );
+        saveSearch(searchTerm.toLowerCase());
       }
     } catch (error) {
       console.error(error);

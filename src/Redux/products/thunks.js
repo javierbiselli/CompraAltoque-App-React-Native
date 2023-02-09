@@ -14,7 +14,7 @@ export const getProducts = () => {
   return async (dispatch) => {
     dispatch(getProductsPending());
     try {
-      const response = await fetch("http://192.168.0.95:5000/products", {
+      const response = await fetch(`${process.env.API_KEY}/products`, {
         headers: {
           "Content-type": "application/json",
         },
@@ -34,7 +34,7 @@ export const getProductById = (productId) => {
     try {
       const token = JSON.parse(sessionStorage.getItem("token"));
       const response = await fetch(
-        `${process.env.REACT_APP_API_URL}/products/${productId}`,
+        `${process.env.API_KEY}/products/${productId}`,
         {
           headers: {
             "Content-type": "application/json",
@@ -56,7 +56,7 @@ export const searchProducts = (searchTerm) => {
     dispatch(searchProductsPending());
     try {
       const response = await fetch(
-        `http://192.168.0.95:5000/products/search?q=${searchTerm}`,
+        `${process.env.API_KEY}/products/search?q=${searchTerm}`,
         {
           headers: {
             "Content-type": "application/json",

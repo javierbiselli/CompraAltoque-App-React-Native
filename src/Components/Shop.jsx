@@ -119,6 +119,9 @@ const Shop = () => {
                     <Text style={styles.shopAddress}>
                       {route.params.shopDescription}
                     </Text>
+                    <Text style={styles.shopSchedule}>
+                      {route.params.shopSchedule}
+                    </Text>
                     {route.params.shopExtraInfo && (
                       <Text style={styles.shopAddress}>
                         {route.params.shopExtraInfo}
@@ -230,6 +233,9 @@ const styles = StyleSheet.create({
   },
   shopAddress: {
     fontSize: 16,
+    marginTop: 8,
+  },
+  shopSchedule: {
     marginTop: 8,
   },
   productContainer: {
